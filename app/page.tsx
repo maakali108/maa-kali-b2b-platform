@@ -21,3 +21,4 @@ export default async function RootPage() {
 const role = (profile as { role?: UserRole } | null)?.role ?? 'retailer';
 
 redirect(homeForRole(role));
+}  
