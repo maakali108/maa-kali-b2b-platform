@@ -8,6 +8,7 @@ interface ProfileRoleRow {
 
 export default async function RootPage() {
   const supabase = createClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -19,8 +20,10 @@ export default async function RootPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
-    .eq('id', user!.id)
-    .single<ProfileRoleRow>();
+    .eq('id', user.id)
+    .single();
 
-  redirect(homeForRole(profile?.role ?? 'retailer'));
+  const role = (profile as ProfileRoleRow | null)?.role ?? 'retailer';
+
+  redirect(homeForRole(role));
 }
