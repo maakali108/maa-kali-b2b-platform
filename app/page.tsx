@@ -12,7 +12,11 @@ export default async function RootPage() {
     redirect('/login');
   }
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user!.id).single();
+  const { data: profile } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', user!.id)
+  .single();
 
   redirect(homeForRole((profile?.role ?? 'retailer') as UserRole));
 }
