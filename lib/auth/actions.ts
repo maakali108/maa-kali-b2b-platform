@@ -11,6 +11,10 @@ export type FormState = {
   fieldErrors?: Record<string, string>;
 } | null;
 
+interface ProfileRoleRow {
+  role: UserRole;
+}
+
 const loginSchema = z.object({
   email: z.string().email('Enter a valid email address.'),
   password: z.string().min(1, 'Password is required.'),
@@ -41,9 +45,9 @@ export async function loginAction(_prevState: FormState, formData: FormData): Pr
     .from('profiles')
     .select('role')
     .eq('id', data.user.id)
-    .single();
+    .single<ProfileRoleRow>();
 
-  const role = (profile?.role ?? 'retailer') as UserRole;
+  const role = profile?.role ?? 'retailer';
   redirect(homeForRole(role));
 }
 
