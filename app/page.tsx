@@ -2,6 +2,10 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { homeForRole, type UserRole } from '@/lib/auth/roles';
 
+interface ProfileRoleRow {
+  role: UserRole;
+}
+
 export default async function RootPage() {
   const supabase = createClient();
   const {
@@ -13,10 +17,10 @@ export default async function RootPage() {
   }
 
   const { data: profile } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('id', user!.id)
-  .single();
+    .from('profiles')
+    .select('role')
+    .eq('id', user!.id)
+    .single<ProfileRoleRow>();
 
-  redirect(homeForRole((profile?.role ?? 'retailer') as UserRole));
+  redirect(homeForRole(profile?.role ?? 'retailer'));
 }
