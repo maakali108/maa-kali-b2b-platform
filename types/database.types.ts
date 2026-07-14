@@ -153,4 +153,4 @@ export interface Database {
       [_ in never]: never;
     };
   };
-      }
+}
