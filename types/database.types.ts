@@ -37,6 +37,7 @@ export interface Database {
           is_active?: boolean;
         };
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
+        Relationships: [];
       };
       areas: {
         Row: {
@@ -53,6 +54,7 @@ export interface Database {
           is_active?: boolean;
         };
         Update: Partial<Database['public']['Tables']['areas']['Insert']>;
+        Relationships: [];
       };
       retailers: {
         Row: {
@@ -80,6 +82,15 @@ export interface Database {
           status?: RetailerStatusEnum;
         };
         Update: Partial<Database['public']['Tables']['retailers']['Insert']>;
+        Relationships: [
+          {
+            foreignKeyName: 'retailers_area_id_fkey';
+            columns: ['area_id'];
+            isOneToOne: false;
+            referencedRelation: 'areas';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       notifications: {
         Row: {
@@ -100,6 +111,7 @@ export interface Database {
           is_read?: boolean;
         };
         Update: Partial<Database['public']['Tables']['notifications']['Insert']>;
+        Relationships: [];
       };
       notification_logs: {
         Row: {
@@ -122,6 +134,7 @@ export interface Database {
           error?: string | null;
         };
         Update: Partial<Database['public']['Tables']['notification_logs']['Insert']>;
+        Relationships: [];
       };
     };
     Views: {
@@ -140,4 +153,4 @@ export interface Database {
       [_ in never]: never;
     };
   };
-}
+      }
