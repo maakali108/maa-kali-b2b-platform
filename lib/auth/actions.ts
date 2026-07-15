@@ -147,6 +147,7 @@ export async function registerRetailerAction(
 
   const { error: retailerError } = await supabase
     .from('retailers')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see comment above: works around a postgrest-js insert() overload quirk
     .insert(retailerPayload as any);
 
   if (retailerError) {
@@ -154,4 +155,4 @@ export async function registerRetailerAction(
   }
 
   redirect('/pending-approval');
-  }
+}
