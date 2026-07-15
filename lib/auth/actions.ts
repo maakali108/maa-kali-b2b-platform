@@ -131,11 +131,12 @@ export async function registerRetailerAction(
   //    defaults to 'pending_approval', an admin must approve it.
   //
   //    The payload is explicitly typed against the real Insert shape
-  //    first (so a typo here is still caught), then passed through a
-  //    targeted `as any` at the call site only. This works around a
-  //    known @supabase/postgrest-js overload-resolution quirk where
-  //    `.insert()` can resolve to `never[]` independent of whether
-  //    `Database` itself is correctly typed.
+  //    first (so a typo here is still caught), then passed through an
+  //    `unknown` intermediate cast at the call site only. This works
+  //    around a known @supabase/postgrest-js overload-resolution quirk
+  //    where `.insert()` can resolve to `never[]` independent of
+  //    whether `Database` itself is correctly typed — without using
+  //    the `any` type anywhere.
   type RetailerInsert = Database['public']['Tables']['retailers']['Insert'];
   const retailerPayload: RetailerInsert = {
     id: signUpData.user!.id,
@@ -147,12 +148,11 @@ export async function registerRetailerAction(
 
   const { error: retailerError } = await supabase
     .from('retailers')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see comment above: works around a postgrest-js insert() overload quirk
-    .insert(retailerPayload as any);
+    .insert(retailerPayload as unknown as never);
 
   if (retailerError) {
     return { error: `Account created, but shop profile could not be saved: ${retailerError.message}` };
   }
 
   redirect('/pending-approval');
-}
+    }
