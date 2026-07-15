@@ -1,14 +1,3 @@
-/**
- * Hand-written baseline types for Phase 1 tables.
- *
- * Once the schema stabilizes, replace/extend this file with the
- * output of:
- *   npx supabase gen types typescript --project-id <ref> > types/database.types.ts
- *
- * Keeping it hand-written for now avoids checking in a huge
- * generated file before Phase 2 (catalog/inventory) tables exist.
- */
-
 export type UserRoleEnum = 'super_admin' | 'admin' | 'staff' | 'salesman' | 'retailer';
 export type RetailerStatusEnum = 'pending_approval' | 'active' | 'suspended';
 export type NotificationChannelEnum = 'whatsapp' | 'sms' | 'push' | 'in_app';
@@ -153,4 +142,4 @@ export interface Database {
       [_ in never]: never;
     };
   };
-}
+      }
