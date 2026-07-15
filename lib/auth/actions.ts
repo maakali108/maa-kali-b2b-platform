@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { homeForRole, type UserRole } from '@/lib/auth/roles';
+import type { Database } from '@/types/database.types';
 
 export type FormState = {
   error?: string;
@@ -128,17 +129,29 @@ export async function registerRetailerAction(
   // 2. Create the retailer-specific row. Self-insert is permitted by
   //    RLS policy `retailers_self_insert` (id = auth.uid()) — status
   //    defaults to 'pending_approval', an admin must approve it.
-  const { error: retailerError } = await supabase.from('retailers').insert({
+  //
+  //    The payload is explicitly typed against the real Insert shape
+  //    first (so a typo here is still caught), then passed through a
+  //    targeted `as any` at the call site only. This works around a
+  //    known @supabase/postgrest-js overload-resolution quirk where
+  //    `.insert()` can resolve to `never[]` independent of whether
+  //    `Database` itself is correctly typed.
+  type RetailerInsert = Database['public']['Tables']['retailers']['Insert'];
+  const retailerPayload: RetailerInsert = {
     id: signUpData.user!.id,
     shop_name: shopName,
     area_id: areaId,
     address,
     status: 'pending_approval',
-  });
+  };
+
+  const { error: retailerError } = await supabase
+    .from('retailers')
+    .insert(retailerPayload as any);
 
   if (retailerError) {
     return { error: `Account created, but shop profile could not be saved: ${retailerError.message}` };
   }
 
   redirect('/pending-approval');
-}
+  }
