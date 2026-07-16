@@ -119,7 +119,6 @@ export async function registerRetailerAction(
   }
 
   if (!signUpData.session) {
-    // Email confirmation is enabled on this Supabase project.
     return {
       error:
         'Account created. Please check your email to confirm your address, then log in to finish setting up your shop profile.',
@@ -129,14 +128,6 @@ export async function registerRetailerAction(
   // 2. Create the retailer-specific row. Self-insert is permitted by
   //    RLS policy `retailers_self_insert` (id = auth.uid()) — status
   //    defaults to 'pending_approval', an admin must approve it.
-  //
-  //    The payload is explicitly typed against the real Insert shape
-  //    first (so a typo here is still caught), then passed through an
-  //    `unknown` intermediate cast at the call site only. This works
-  //    around a known @supabase/postgrest-js overload-resolution quirk
-  //    where `.insert()` can resolve to `never[]` independent of
-  //    whether `Database` itself is correctly typed — without using
-  //    the `any` type anywhere.
   type RetailerInsert = Database['public']['Tables']['retailers']['Insert'];
   const retailerPayload: RetailerInsert = {
     id: signUpData.user!.id,
