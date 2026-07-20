@@ -1,23 +1,65 @@
-import { Users, UserCheck, TrendingUp, PackageSearch, Sparkles } from 'lucide-react';
+import { Users, UserCheck, TrendingUp, PackageSearch, Sparkles, Tag, Tags, Warehouse, Activity } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function getCounts() {
   const supabase = createClient();
 
-  const [{ count: totalRetailers }, { count: pendingRetailers }] = await Promise.all([
+  const [
+    { count: totalRetailers },
+    { count: pendingRetailers },
+    { count: totalProducts },
+    { count: totalBrands },
+    { count: totalCategories },
+    { count: totalWarehouses },
+  ] = await Promise.all([
     supabase.from('retailers').select('id', { count: 'exact', head: true }),
     supabase.from('retailers').select('id', { count: 'exact', head: true }).eq('status', 'pending_approval'),
+    supabase.from('products').select('id', { count: 'exact', head: true }),
+    supabase.from('brands').select('id', { count: 'exact', head: true }),
+    supabase.from('categories').select('id', { count: 'exact', head: true }),
+    supabase.from('warehouses').select('id', { count: 'exact', head: true }),
   ]);
 
   return {
     totalRetailers: totalRetailers ?? 0,
     pendingRetailers: pendingRetailers ?? 0,
+    totalProducts: totalProducts ?? 0,
+    totalBrands: totalBrands ?? 0,
+    totalCategories: totalCategories ?? 0,
+    totalWarehouses: totalWarehouses ?? 0,
   };
 }
 
+interface ActivityRow {
+  id: string;
+  table_name: string;
+  action: string;
+  created_at: string;
+  profiles: { full_name: string } | null;
+}
+
+const TABLE_LABELS: Record<string, string> = {
+  products: 'a product',
+  price_lists: 'a price',
+  orders: 'an order',
+  product_packs: 'a product pack',
+  retailer_documents: 'a retailer document',
+};
+
+async function getRecentActivity(): Promise<ActivityRow[]> {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('audit_logs')
+    .select('id, table_name, action, created_at, profiles ( full_name )')
+    .order('created_at', { ascending: false })
+    .limit(10);
+  return (data ?? []) as unknown as ActivityRow[];
+}
+
 export default async function AdminDashboardPage() {
-  const { totalRetailers, pendingRetailers } = await getCounts();
+  const [{ totalRetailers, pendingRetailers, totalProducts, totalBrands, totalCategories, totalWarehouses }, activity] =
+    await Promise.all([getCounts(), getRecentActivity()]);
 
   return (
     <div className="space-y-6">
@@ -36,8 +78,11 @@ export default async function AdminDashboardPage() {
           value={pendingRetailers}
           accent={pendingRetailers > 0}
         />
-        <StatCard icon={PackageSearch} label="Products in Catalog" value={0} hint="Add products to get started" />
+        <StatCard icon={PackageSearch} label="Total Products" value={totalProducts} hint={totalProducts === 0 ? 'Add products to get started' : undefined} />
         <StatCard icon={TrendingUp} label="Orders Today" value={0} hint="No orders placed yet" />
+        <StatCard icon={Tag} label="Total Brands" value={totalBrands} />
+        <StatCard icon={Tags} label="Total Categories" value={totalCategories} />
+        <StatCard icon={Warehouse} label="Total Warehouses" value={totalWarehouses} />
       </div>
 
       <div>
@@ -63,6 +108,35 @@ export default async function AdminDashboardPage() {
             body="Retailer purchase patterns (RFM scoring) build up as orders come in."
           />
         </div>
+      </div>
+
+      <div>
+        <div className="mb-3 flex items-center gap-2">
+          <Activity className="h-4 w-4 text-primary-600" />
+          <h2 className="text-sm font-semibold text-ink-800">Recent Activity</h2>
+        </div>
+        {activity.length === 0 ? (
+          <Card>
+            <p className="text-sm text-ink-500">
+              Changes to products, pricing, and orders made by your team will show up here.
+            </p>
+          </Card>
+        ) : (
+          <Card className="overflow-hidden p-0">
+            <ul className="divide-y divide-ink-100">
+              {activity.map((a) => (
+                <li key={a.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                  <span className="text-ink-700">
+                    <span className="font-medium text-ink-900">{a.profiles?.full_name ?? 'Someone'}</span>{' '}
+                    {a.action === 'insert' ? 'added' : a.action === 'update' ? 'updated' : 'removed'}{' '}
+                    {TABLE_LABELS[a.table_name] ?? a.table_name}
+                  </span>
+                  <span className="text-xs text-ink-400">{new Date(a.created_at).toLocaleString('en-IN')}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
       </div>
 
       {totalRetailers === 0 ? (
@@ -122,4 +196,4 @@ function InsightCard({ title, body }: { title: string; body: string }) {
       <p className="text-sm text-ink-500">{body}</p>
     </Card>
   );
-}
+          }
