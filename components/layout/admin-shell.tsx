@@ -13,6 +13,7 @@ import {
   BarChart3,
   Image as ImageIcon,
   Bell,
+  MapPin,
 } from 'lucide-react';
 import { Sidebar, type NavItem } from '@/components/layout/sidebar';
 import { Topbar } from '@/components/layout/topbar';
@@ -22,6 +23,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Products', href: '/admin/products', icon: Package },
   { label: 'Categories & Brands', href: '/admin/catalog', icon: Tags },
+  { label: 'Areas', href: '/admin/areas', icon: MapPin },
+  { label: 'Warehouses', href: '/admin/warehouses', icon: Warehouse },
   { label: 'Pricing & Schemes', href: '/admin/pricing', icon: Tag },
   { label: 'Inventory', href: '/admin/inventory', icon: Warehouse },
   { label: 'Orders', href: '/admin/orders', icon: ShoppingCart },
